@@ -20,5 +20,6 @@ type limiterRouter struct {
 }
 
 func (l *limiterRouter) get(c *gin.Context) {
-	c.String(http.StatusOK, "hihi")
+	clientIP := c.ClientIP()
+	c.String(http.StatusOK, "hihi " + clientIP)
 }
