@@ -67,12 +67,17 @@ func TestRegisterRouter(t *testing.T) {
 
 	var wg sync.WaitGroup
 
+	// 模擬兩個以上 Client，每個 IP 有總數量上限
 	ip := []string{"192.0.2.1:1235", "192.0.2.2:1235"}
+
+	// 測試資料 10 筆
+	//ip := []string{"192.0.2.1:1235", "192.0.2.2:1235", "192.0.2.3:1235", "192.0.2.4:1235", "192.0.2.5:1235",
+	//	"192.0.2.6:1235", "192.0.2.7:1235", "192.0.2.8:1235", "192.0.2.9:1235", "192.0.2.10:1235"}
 	for i := 0; i < len(ip); i++ {
 		wg.Add(1)
 
+		// 模擬請求並發送出
 		go func(wg *sync.WaitGroup, t *testing.T, r *gin.Engine, url, remoteAddr string) {
-			t.Log(fmt.Sprintf("remoteAddr : %s", remoteAddr))
 			defer wg.Done()
 
 			testLimiterUnblocked(t, r, url, remoteAddr)
@@ -80,7 +85,8 @@ func TestRegisterRouter(t *testing.T) {
 
 			// 睡眠模擬被阻擋一段時間
 			t.Log(fmt.Sprintf("限流 %s 模擬被阻擋一段時間", configs.ConfigHost.GetInterval()))
-			ticker := time.NewTicker(configs.ConfigHost.GetInterval())
+			// 原本阻擋再加 1s 還是可能有時間差問題
+			ticker := time.NewTicker(configs.ConfigHost.GetInterval() + 1)
 
 			<-ticker.C
 			// 超過限流限制時間，重新發起請求
@@ -95,17 +101,43 @@ func TestRegisterRouter(t *testing.T) {
 
 // testLimiterUnblocked 限流尚未到達上限，正常取得 requests 數量
 func testLimiterUnblocked(t *testing.T, r *gin.Engine, url, remoteAddr string) {
-	for i := 0; i < configs.ConfigHost.GetMaxCount(); i++ {
-		httpStatus, body, err := httptestRequest(r, http.MethodGet, url, nil, remoteAddr)
-		if err != nil {
-			t.Error(err)
-			return
-		}
+	var wg2 sync.WaitGroup
 
-		assert.Equal(t, http.StatusOK, httpStatus)
-		response := i + 1
-		assert.Equal(t, string(body), strconv.Itoa(response))
+	for i := 0; i < configs.ConfigHost.GetMaxCount(); i++ {
+		wg2.Add(1)
+
+		// 模擬請求並發送出
+		go func(wg2 *sync.WaitGroup, t *testing.T, r *gin.Engine, url, remoteAddr string) {
+			defer wg2.Done()
+
+			httpStatus, body, err := httptestRequest(r, http.MethodGet, url, nil, remoteAddr)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			assert.Equal(t, http.StatusOK, httpStatus)
+
+			// 用條件判斷，只要目前數量未超過限制數量，代表正確
+			assert.Condition(t, func() bool {
+				responseCount, err := strconv.Atoi(string(body))
+				if err != nil {
+					t.Error(err)
+				}
+
+				t.Log(fmt.Sprintf("remoteAddr %s, maxCount %d, responseCount %d, maxCount > responseCount %t",
+					remoteAddr, configs.ConfigHost.GetMaxCount(), responseCount, responseCount > configs.ConfigHost.GetMaxCount()))
+
+				if responseCount > configs.ConfigHost.GetMaxCount() {
+					return false
+				}
+
+				return true
+			}, fmt.Sprintf("限流未成功阻擋，超過限制 %d 數量的上限", configs.ConfigHost.GetMaxCount()))
+		}(&wg2, t, r, url, remoteAddr)
 	}
+
+	wg2.Wait()
 }
 
 // testLimiterBlock 限流到達上限，阻止正常請求
