@@ -8,8 +8,14 @@ import (
 )
 
 func newConfigHost() *configHost {
+	port := os.Getenv("PORT")
+
+	if tools.IsEmpty(port) {
+		port = viper.GetString("host.limiter")
+	}
+
 	config := &configHost{
-		limiterHost: ":" + viper.GetString("host.limiter"),
+		limiterHost: ":" + port,
 	}
 
 	return config
@@ -20,10 +26,5 @@ type configHost struct {
 }
 
 func (c *configHost) GetLimiterHost() string {
-	port := os.Getenv("PORT")
-	if tools.IsEmpty(port) {
-		return c.limiterHost
-	}
-
-	return ":" + port
+	return c.limiterHost
 }
