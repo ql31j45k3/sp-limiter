@@ -25,5 +25,5 @@ func (c *configHost) GetLimiterHost() string {
 		return c.limiterHost
 	}
 
-	return port
+	return ":" + port
 }
