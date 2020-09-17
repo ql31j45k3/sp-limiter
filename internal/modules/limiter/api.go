@@ -23,7 +23,7 @@ func (l *limiterRouter) getCountLimiter(c *gin.Context) {
 
 	if countLimit.IsAvailable(clientIP) {
 		countLimit.Increase(clientIP)
-		c.String(http.StatusOK, "clientIP : "+clientIP+" Request count: "+countLimit.GetCount(clientIP))
+		c.String(http.StatusOK, countLimit.GetCount(clientIP))
 		return
 	}
 
