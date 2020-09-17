@@ -87,8 +87,7 @@ func TestRegisterRouter(t *testing.T) {
 
 			// 睡眠模擬被阻擋一段時間
 			t.Log(fmt.Sprintf("限流 %s 模擬被阻擋一段時間", configs.ConfigHost.GetInterval()))
-			// 原本阻擋再加 1s 還是可能有時間差問題
-			ticker := time.NewTicker(configs.ConfigHost.GetInterval() + 1)
+			ticker := time.NewTicker(configs.ConfigHost.GetInterval())
 
 			<-ticker.C
 			// 超過限流限制時間，重新發起請求
@@ -126,7 +125,7 @@ func testLimiterUnblocked(t *testing.T, r *gin.Engine, url, remoteAddr string) {
 				if err != nil {
 					t.Error(err)
 				}
-				
+
 				t.Log(fmt.Sprintf("remoteAddr %s, maxCount %d, responseCount %d, maxCount > responseCount %t",
 					remoteAddr, configs.ConfigHost.GetMaxCount(), responseCount, responseCount > configs.ConfigHost.GetMaxCount()))
 
