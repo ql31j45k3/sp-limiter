@@ -1,0 +1,6 @@
+host:
+  limiter: 8080
+
+gin:
+  # mode: debug、release、test
+  mode: debug
