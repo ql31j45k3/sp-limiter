@@ -1,6 +1,0 @@
-host:
-  limiter: <value>
-
-gin:
-  # mode: debug、release、test
-  mode: <value>

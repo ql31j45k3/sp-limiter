@@ -1,5 +1,9 @@
 host:
   limiter: 8080
+  # mode: counter、
+  mode: counter
+  interval: 60
+  maxCount: 5
 
 gin:
   # mode: debug、release、test

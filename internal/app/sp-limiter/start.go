@@ -10,6 +10,7 @@ import (
 
 func Start() {
 	configs.Start("")
+	limiter.Start()
 
 	container := buildContainer()
 
