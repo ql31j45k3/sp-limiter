@@ -1,14 +1,14 @@
 package limiter
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/ql31j45k3/sp-limiter/configs"
-	"net/http"
 )
 
 func RegisterRouter(r *gin.Engine) {
-	routerGroup := r.Group("/")
-	routerGroup.GET("", apiFunc[configs.ConfigHost.GetMode()])
+	r.GET("/", apiFunc[configs.ConfigHost.GetMode()])
 }
 
 func newLimiter() limiterRouter {
