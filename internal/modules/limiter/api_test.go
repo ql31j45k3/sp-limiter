@@ -26,6 +26,7 @@ func start() *gin.Engine {
 	if err2 != nil {
 		panic(err2)
 	}
+	// 測試執行起點位置不一樣，先手動調整取得路徑，才可正常取得 config.yaml 設定檔
 	path = path[0:strings.Index(path, "sp-limiter")] + "sp-limiter"
 	configs.Start(path)
 
@@ -40,6 +41,7 @@ func start() *gin.Engine {
 // httptestRequest 根據特定請求 URL 和參數 param
 func httptestRequest(r *gin.Engine, method, uri string, reader io.Reader, remoteAddr string) (int, []byte, error) {
 	req := httptest.NewRequest(method, uri, reader)
+	// 模擬不同 IP/客戶端
 	req.RemoteAddr = remoteAddr
 
 	w := httptest.NewRecorder()
@@ -76,7 +78,7 @@ func TestRegisterRouter(t *testing.T) {
 	for i := 0; i < len(ip); i++ {
 		wg.Add(1)
 
-		// 模擬請求並發送出
+		// 模擬請求並發送出，模擬同時多 IP/客戶端
 		go func(wg *sync.WaitGroup, t *testing.T, r *gin.Engine, url, remoteAddr string) {
 			defer wg.Done()
 
@@ -106,7 +108,7 @@ func testLimiterUnblocked(t *testing.T, r *gin.Engine, url, remoteAddr string) {
 	for i := 0; i < configs.ConfigHost.GetMaxCount(); i++ {
 		wg2.Add(1)
 
-		// 模擬請求並發送出
+		// 模擬請求並發送出，模擬同個 IP/客戶端執行多次 API 請求
 		go func(wg2 *sync.WaitGroup, t *testing.T, r *gin.Engine, url, remoteAddr string) {
 			defer wg2.Done()
 
@@ -124,7 +126,7 @@ func testLimiterUnblocked(t *testing.T, r *gin.Engine, url, remoteAddr string) {
 				if err != nil {
 					t.Error(err)
 				}
-
+				
 				t.Log(fmt.Sprintf("remoteAddr %s, maxCount %d, responseCount %d, maxCount > responseCount %t",
 					remoteAddr, configs.ConfigHost.GetMaxCount(), responseCount, responseCount > configs.ConfigHost.GetMaxCount()))
 
