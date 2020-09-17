@@ -1,5 +1,5 @@
 host:
-  limiter: 5000
+  limiter: 80
 
 gin:
   # mode: debug、release、test
