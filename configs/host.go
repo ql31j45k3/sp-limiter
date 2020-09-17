@@ -1,6 +1,11 @@
 package configs
 
-import "github.com/spf13/viper"
+import (
+	"os"
+
+	"github.com/ql31j45k3/sp-limiter/internal/utils/tools"
+	"github.com/spf13/viper"
+)
 
 func newConfigHost() *configHost {
 	config := &configHost{
@@ -15,5 +20,10 @@ type configHost struct {
 }
 
 func (c *configHost) GetLimiterHost() string {
-	return c.limiterHost
+	port := os.Getenv("PORT")
+	if tools.IsEmpty(port) {
+		return c.limiterHost
+	}
+
+	return port
 }
