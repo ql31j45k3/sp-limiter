@@ -29,15 +29,15 @@ func newCounterLimit(interval time.Duration, maxCount int) *counterLimit {
 
 type counterLimit struct {
 	interval time.Duration
-	lock     sync.Mutex
+	mu       sync.Mutex
 
 	maxCount int
 	ip2count map[string]int
 }
 
 func (l *counterLimit) Increase(ip string) {
-	l.lock.Lock()
-	defer l.lock.Unlock()
+	l.mu.Lock()
+	defer l.mu.Unlock()
 
 	if tools.IsEmpty(ip) {
 		return
@@ -47,19 +47,27 @@ func (l *counterLimit) Increase(ip string) {
 }
 
 func (l *counterLimit) Zero() {
-	l.lock.Lock()
-	defer l.lock.Unlock()
+	l.mu.Lock()
+	defer l.mu.Unlock()
 
 	l.ip2count = make(map[string]int)
 }
 
 func (l *counterLimit) IsAvailable(ip string) bool {
-	l.lock.Lock()
-	defer l.lock.Unlock()
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	if tools.IsEmpty(ip) {
+		return false
+	}
 
 	return l.ip2count[ip] < l.maxCount
 }
 
 func (l *counterLimit) GetCount(ip string) string {
+	if tools.IsEmpty(ip) {
+		return ""
+	}
+
 	return strconv.Itoa(l.ip2count[ip])
 }
