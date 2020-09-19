@@ -65,6 +65,9 @@ func (l *counterLimit) IsAvailable(ip string) bool {
 }
 
 func (l *counterLimit) GetCount(ip string) string {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	if tools.IsEmpty(ip) {
 		return ""
 	}
