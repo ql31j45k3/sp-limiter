@@ -150,5 +150,5 @@ func testLimiterBlock(t *testing.T, r *gin.Engine, url, remoteAddr string) {
 	}
 
 	assert.Equal(t, http.StatusOK, httpStatus)
-	assert.Equal(t, string(body), "Error")
+	assert.Equal(t, "Error", string(body))
 }
