@@ -1,7 +1,6 @@
 package limiter
 
 import (
-	"fmt"
 	"github.com/ql31j45k3/sp-limiter/internal/utils/tools"
 	"sync"
 	"time"
@@ -49,7 +48,6 @@ func (l *tokenBucketLimiter) addToken() {
 			select {
 			case v <- struct{}{}:
 			default:
-				fmt.Println(fmt.Sprintf("ip %s, len(v) %d", ip, len(v)))
 				// 代表容量已滿，後續直接略過
 				break
 			}
