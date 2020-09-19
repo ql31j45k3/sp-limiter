@@ -32,8 +32,9 @@ func (l *limiterRouter) getCountLimiter(c *gin.Context) {
 
 func (l *limiterRouter) getTokenBucket(c *gin.Context) {
 	clientIP := c.ClientIP()
+	block := false
 
-	if ok, count := tokenBucket.TakeAvailable(clientIP); ok {
+	if ok, count := tokenBucket.TakeAvailable(clientIP, block); ok {
 		c.String(http.StatusOK, strconv.Itoa(int(count)))
 		return
 	}

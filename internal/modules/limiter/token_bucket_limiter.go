@@ -59,7 +59,7 @@ func (l *tokenBucketLimiter) addToken() {
 	}
 }
 
-func (l *tokenBucketLimiter) TakeAvailable(ip string) (bool, int64) {
+func (l *tokenBucketLimiter) TakeAvailable(ip string, block bool) (bool, int64) {
 	if tools.IsEmpty(ip) {
 		return false, 0
 	}
@@ -70,6 +70,16 @@ func (l *tokenBucketLimiter) TakeAvailable(ip string) (bool, int64) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
+	// 選擇等待拿到 token
+	if block {
+		select {
+		case <-l.ip2Token[ip]:
+			l.ip2AvailableToken[ip] += 1
+			return true, l.ip2AvailableToken[ip]
+		}
+	}
+
+	// 選擇沒有 token，直接 return
 	select {
 	case <-l.ip2Token[ip]:
 		l.ip2AvailableToken[ip] += 1
