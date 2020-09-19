@@ -1,7 +1,7 @@
 host:
   limiter: 8080
-  # mode: counter、
-  mode: counter
+  # mode: counter(計數器)、tokenBucket(令牌桶)
+  mode: tokenBucket
   interval: 60
   maxCount: 5
 

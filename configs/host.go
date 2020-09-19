@@ -11,6 +11,7 @@ import (
 
 const (
 	HostModeCounter = "counter"
+	HostModeTokenBucket = "tokenbucket"
 )
 
 func newConfigHost() *configHost {

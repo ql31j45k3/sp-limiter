@@ -7,16 +7,18 @@ import (
 
 var (
 	countLimit *counterLimit
+	tokenBucket *tokenBucketLimiter
 
 	apiFunc map[string]func(*gin.Context)
 )
 
 func Start() {
 	countLimit = newCounterLimit(configs.ConfigHost.GetInterval(), configs.ConfigHost.GetMaxCount())
+	tokenBucket = newTokenBucketLimiter(configs.ConfigHost.GetInterval(), int64(configs.ConfigHost.GetMaxCount()))
 
 	limiterRouter := newLimiter()
 
 	apiFunc = make(map[string]func(*gin.Context))
-
 	apiFunc[configs.HostModeCounter] = limiterRouter.getCountLimiter
+	apiFunc[configs.HostModeTokenBucket] = limiterRouter.getTokenBucket
 }
