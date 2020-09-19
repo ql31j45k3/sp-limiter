@@ -58,15 +58,15 @@ func (l *tokenBucketLimiter) addToken() {
 }
 
 func (l *tokenBucketLimiter) TakeAvailable(ip string) (bool, int64) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	if tools.IsEmpty(ip) {
 		return false, 0
 	}
 
 	// 目前數據結構，IP 對應 chan，由於 IP 無法事先知道，先用惰性方式，第一次再置入 token
 	l.isExist(ip)
-
-	l.mu.Lock()
-	defer l.mu.Unlock()
 
 	select {
 	case <-l.ip2Token[ip]:
@@ -78,9 +78,6 @@ func (l *tokenBucketLimiter) TakeAvailable(ip string) (bool, int64) {
 }
 
 func (l *tokenBucketLimiter) isExist(ip string) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-
 	if _, ok := l.ip2Token[ip]; ok {
 		return
 	}
