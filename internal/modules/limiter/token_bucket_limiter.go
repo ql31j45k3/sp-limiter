@@ -1,6 +1,7 @@
 package limiter
 
 import (
+	"fmt"
 	"github.com/ql31j45k3/sp-limiter/internal/utils/tools"
 	"sync"
 	"time"
@@ -48,6 +49,7 @@ func (l *tokenBucketLimiter) addToken() {
 			select {
 			case v <- struct{}{}:
 			default:
+				fmt.Println(fmt.Sprintf("ip %s, len(v) %d", ip, len(v)))
 				// 代表容量已滿，後續直接略過
 				break
 			}
@@ -58,15 +60,15 @@ func (l *tokenBucketLimiter) addToken() {
 }
 
 func (l *tokenBucketLimiter) TakeAvailable(ip string) (bool, int64) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-
 	if tools.IsEmpty(ip) {
 		return false, 0
 	}
 
 	// 目前數據結構，IP 對應 chan，由於 IP 無法事先知道，先用惰性方式，第一次再置入 token
 	l.isExist(ip)
+
+	l.mu.Lock()
+	defer l.mu.Unlock()
 
 	select {
 	case <-l.ip2Token[ip]:
@@ -78,6 +80,9 @@ func (l *tokenBucketLimiter) TakeAvailable(ip string) (bool, int64) {
 }
 
 func (l *tokenBucketLimiter) isExist(ip string) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
 	if _, ok := l.ip2Token[ip]; ok {
 		return
 	}
@@ -89,9 +94,6 @@ func (l *tokenBucketLimiter) isExist(ip string) {
 	for i = 0; i < l.capacity; i++ {
 		select {
 		case v <- struct{}{}:
-		default:
-			// 代表容量已滿，後續直接略過
-			break
 		}
 	}
 }
