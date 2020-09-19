@@ -123,7 +123,9 @@ func testLimiterUnblocked(t *testing.T, r *gin.Engine, url, remoteAddr string) {
 			assert.Condition(t, func() bool {
 				responseCount, err := strconv.Atoi(string(body))
 				if err != nil {
+					t.Log(fmt.Sprintf("body %s", string(body)))
 					t.Error(err)
+					return false
 				}
 
 				t.Log(fmt.Sprintf("remoteAddr %s, maxCount %d, responseCount %d, maxCount > responseCount %t",
