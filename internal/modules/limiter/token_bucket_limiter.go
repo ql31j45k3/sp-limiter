@@ -66,10 +66,15 @@ func (l *tokenBucketLimiter) TakeAvailable(ip string, block bool) (bool, int64) 
 	l.isExist(ip)
 
 	l.mu.Lock()
-	defer l.mu.Unlock()
+	if !block {
+		// 客戶端沒有阻塞等待 token 才可使用 defer 方式解除 lock
+		defer l.mu.Unlock()
+	}
 
 	// 選擇等待拿到 token
 	if block {
+		// 要解除 lock，才可等待 token 新增
+		l.mu.Unlock()
 		select {
 		case <-l.ip2Token[ip]:
 			l.ip2AvailableToken[ip] += 1
