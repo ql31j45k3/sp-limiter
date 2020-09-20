@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -58,6 +59,9 @@ func (l *limiterRouter) getTokenBucket(c *gin.Context) {
 
 func (l *limiterRouter) getRedisLimiter(c *gin.Context) {
 	ctx := context.Background()
+
+	v2, err2 :=l.rdb.Set(ctx, "test", c.Query("test"), 10*time.Second).Result()
+	fmt.Println(v2, err2)
 
 	v, err := l.rdb.Get(ctx, "test").Result()
 	fmt.Println(v, err)
