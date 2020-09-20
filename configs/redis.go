@@ -8,29 +8,40 @@ import (
 )
 
 func newConfigRedis() *configRedis {
-	addr := os.Getenv("REDIS_URL")
-	password := ""
+	isProd := false
+	url := os.Getenv("REDIS_URL")
 
-	if tools.IsEmpty(addr) {
-		addr = viper.GetString("redis.addr")
-		password = viper.GetString("redis.password")
+	if tools.IsNotEmpty(url) {
+		isProd = true
 	}
 
-
 	config := &configRedis{
-		addr: addr,
-		password: password,
-		db: viper.GetInt("redis.db"),
+		isProd:   isProd,
+		url:      url,
+		addr:     viper.GetString("redis.addr"),
+		password: viper.GetString("redis.password"),
+		db:       viper.GetInt("redis.db"),
 	}
 
 	return config
 }
 
 type configRedis struct {
-	addr string
+	isProd bool
+
+	url      string
+	addr     string
 	password string
 
 	db int
+}
+
+func (c *configRedis) GetIsProd() bool {
+	return c.isProd
+}
+
+func (c *configRedis) GetURL() string {
+	return c.url
 }
 
 func (c *configRedis) GetAddr() string {

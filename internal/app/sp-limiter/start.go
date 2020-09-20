@@ -42,9 +42,22 @@ func (cp *containerProvide) gin() *gin.Engine {
 }
 
 func (cp *containerProvide) redisClient() *redis.Client {
-	return redis.NewClient(&redis.Options{
-		Addr:     configs.ConfigRedis.GetAddr(),
-		Password: configs.ConfigRedis.GetPassword(),
-		DB:       configs.ConfigRedis.GetDB(),
-	})
+	var opt *redis.Options
+
+	if configs.ConfigRedis.GetIsProd() {
+		var err error
+		opt, err = redis.ParseURL(configs.ConfigRedis.GetURL())
+		if err != nil {
+			panic(err)
+		}
+
+	} else {
+		opt = &redis.Options{
+			Addr:     configs.ConfigRedis.GetAddr(),
+			Password: configs.ConfigRedis.GetPassword(),
+			DB:       configs.ConfigRedis.GetDB(),
+		}
+	}
+
+	return redis.NewClient(opt)
 }
