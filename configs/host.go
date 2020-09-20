@@ -12,6 +12,7 @@ import (
 const (
 	HostModeCounter = "counter"
 	HostModeTokenBucket = "tokenbucket"
+	HostModeRedis = "redislimiter"
 )
 
 func newConfigHost() *configHost {

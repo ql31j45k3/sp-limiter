@@ -1,21 +1,35 @@
 package limiter
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/ql31j45k3/sp-limiter/configs"
+	"context"
+	"fmt"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
+	"github.com/ql31j45k3/sp-limiter/configs"
 )
 
-func RegisterRouter(r *gin.Engine) {
+func RegisterRouter(r *gin.Engine, rdb *redis.Client) {
+	limiterRouter := newLimiter(rdb)
+
+	apiFunc := make(map[string]func(*gin.Context))
+	apiFunc[configs.HostModeCounter] = limiterRouter.getCountLimiter
+	apiFunc[configs.HostModeTokenBucket] = limiterRouter.getTokenBucket
+	apiFunc[configs.HostModeRedis] = limiterRouter.getRedisLimiter
+
 	r.GET("/", apiFunc[configs.ConfigHost.GetMode()])
 }
 
-func newLimiter() limiterRouter {
-	return limiterRouter{}
+func newLimiter(rdb *redis.Client) limiterRouter {
+	return limiterRouter{
+		rdb:rdb,
+	}
 }
 
 type limiterRouter struct {
+	rdb *redis.Client
 }
 
 func (l *limiterRouter) getCountLimiter(c *gin.Context) {
@@ -40,4 +54,13 @@ func (l *limiterRouter) getTokenBucket(c *gin.Context) {
 	}
 
 	c.String(http.StatusOK, "Error")
+}
+
+func (l *limiterRouter) getRedisLimiter(c *gin.Context) {
+	ctx := context.Background()
+
+	v, err := l.rdb.Get(ctx, "test").Result()
+	fmt.Println(v, err)
+
+	c.String(http.StatusOK, v)
 }

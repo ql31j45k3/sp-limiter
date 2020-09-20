@@ -1,10 +1,15 @@
 host:
   limiter: 8080
-  # mode: counter(計數器)、tokenBucket(令牌桶)
-  mode: tokenBucket
+  # mode: counter(計數器)、tokenBucket(令牌桶)、redisLimiter(redis 限流版)
+  mode: redisLimiter
   interval: 60
-  maxCount: 5
+  maxCount: 60
 
 gin:
   # mode: debug、release、test
   mode: debug
+x
+redis:
+  addr: localhost:6379
+  password: myRedisPassword
+  db: 0

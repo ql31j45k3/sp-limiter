@@ -8,8 +8,9 @@ import (
 )
 
 var (
-	ConfigHost *configHost
-	ConfigGin  *configGin
+	ConfigHost  *configHost
+	ConfigGin   *configGin
+	ConfigRedis *configRedis
 )
 
 // Start 開始 Config 設定參數與讀取檔案並轉成 struct
@@ -25,6 +26,7 @@ func Start(sourcePath string) {
 
 	ConfigHost = newConfigHost()
 	ConfigGin = newConfigGin()
+	ConfigRedis = newConfigRedis()
 }
 
 // getPath 預設會抓取執行程式的啟示點資料夾
