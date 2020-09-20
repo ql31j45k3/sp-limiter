@@ -3,9 +3,9 @@ package limiter
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -13,12 +13,17 @@ import (
 )
 
 func RegisterRouter(r *gin.Engine, rdb *redis.Client) {
+	ctx := context.Background()
+	if err := redisCounter.initScript(ctx, rdb); err != nil {
+		panic(err)
+	}
+
 	limiterRouter := newLimiter(rdb)
 
 	apiFunc := make(map[string]func(*gin.Context))
 	apiFunc[configs.HostModeCounter] = limiterRouter.getCountLimiter
 	apiFunc[configs.HostModeTokenBucket] = limiterRouter.getTokenBucket
-	apiFunc[configs.HostModeRedis] = limiterRouter.getRedisLimiter
+	apiFunc[configs.HostModeRedisCounter] = limiterRouter.getRedisCounter
 
 	r.GET("/", apiFunc[configs.ConfigHost.GetMode()])
 }
@@ -57,14 +62,21 @@ func (l *limiterRouter) getTokenBucket(c *gin.Context) {
 	c.String(http.StatusOK, "Error")
 }
 
-func (l *limiterRouter) getRedisLimiter(c *gin.Context) {
+func (l *limiterRouter) getRedisCounter(c *gin.Context) {
 	ctx := context.Background()
+	clientIP := c.ClientIP()
 
-	v2, err2 :=l.rdb.Set(ctx, "test", c.Query("test"), 10*time.Second).Result()
-	fmt.Println(v2, err2)
+	ok, count, err := redisCounter.IsActionAllow(ctx, l.rdb, clientIP)
+	if err != nil {
+		log.Println(fmt.Sprintf("Error IsActionAllow fail %v", err))
+		c.String(http.StatusOK, "Error IsActionAllow fail")
+		return
+	}
 
-	v, err := l.rdb.Get(ctx, "test").Result()
-	fmt.Println(v, err)
+	if ok {
+		c.String(http.StatusOK, strconv.Itoa(int(count)))
+		return
+	}
 
-	c.String(http.StatusOK, v)
+	c.String(http.StatusOK, "Error")
 }

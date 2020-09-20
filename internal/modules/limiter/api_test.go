@@ -2,6 +2,7 @@ package limiter
 
 import (
 	"fmt"
+	"github.com/go-redis/redis/v8"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -33,7 +34,14 @@ func start() *gin.Engine {
 	Start()
 
 	r := gin.Default()
-	RegisterRouter(r)
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     configs.ConfigRedis.GetAddr(),
+		Password: configs.ConfigRedis.GetPassword(),
+		DB:       configs.ConfigRedis.GetDB(),
+	})
+
+	RegisterRouter(r, rdb)
 
 	return r
 }
