@@ -51,6 +51,8 @@ func (cp *containerProvide) redisClient() *redis.Client {
 			panic(err)
 		}
 
+		opt.Username = ""
+
 	} else {
 		opt = &redis.Options{
 			Addr:     configs.ConfigRedis.GetAddr(),
