@@ -10,6 +10,7 @@ var (
 	redisCounter *redisCounterLimiter
 )
 
+// 初始化 countLimit、tokenBucket、redisCounter
 func Start() {
 	countLimit = newCounterLimit(configs.ConfigHost.GetInterval(), configs.ConfigHost.GetMaxCount())
 	tokenBucket = newTokenBucketLimiter(configs.ConfigHost.GetInterval(), int64(configs.ConfigHost.GetMaxCount()))

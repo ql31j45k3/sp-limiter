@@ -16,6 +16,7 @@ const (
 )
 
 func newConfigHost() *configHost {
+	// 取得 heroku 運行環境的 PORT 變數
 	port := os.Getenv("PORT")
 	if tools.IsEmpty(port) {
 		port = viper.GetString("host.limiter")

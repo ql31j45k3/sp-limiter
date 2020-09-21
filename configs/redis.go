@@ -9,6 +9,7 @@ import (
 
 func newConfigRedis() *configRedis {
 	isProd := false
+	// 取得 heroku 運行環境的 REDIS_URL 變數
 	url := os.Getenv("REDIS_URL")
 
 	if tools.IsNotEmpty(url) {
