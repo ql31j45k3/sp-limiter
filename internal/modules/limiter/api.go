@@ -47,8 +47,7 @@ type limiterRouter struct {
 func (l *limiterRouter) getCountLimiter(c *gin.Context) {
 	clientIP := c.ClientIP()
 
-	if countLimit.IsAvailable(clientIP) {
-		countLimit.Increase(clientIP)
+	if countLimit.IsAvailableAndIncr(clientIP) {
 		c.String(http.StatusOK, countLimit.GetCount(clientIP))
 		return
 	}
