@@ -3,8 +3,8 @@ host:
   limiter: 8080
   # mode: counter(計數器)、tokenBucket(令牌桶)、redisCounter(計數器 Redis)
   mode: redisCounter
-  interval: 15
-  maxCount: 5
+  interval: 60
+  maxCount: 60
 
 gin:
   # mode: debug、release、test
