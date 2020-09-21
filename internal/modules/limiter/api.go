@@ -2,6 +2,7 @@ package limiter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -25,7 +26,12 @@ func RegisterRouter(r *gin.Engine, rdb *redis.Client) {
 	apiFunc[configs.HostModeTokenBucket] = limiterRouter.getTokenBucket
 	apiFunc[configs.HostModeRedisCounter] = limiterRouter.getRedisCounter
 
-	r.GET("/", apiFunc[configs.ConfigHost.GetMode()])
+	limiterFunc, ok := apiFunc[configs.ConfigHost.GetMode()];
+	if !ok {
+		panic(errors.New("host.mode not exist implement func"))
+	}
+
+	r.GET("/", limiterFunc)
 }
 
 func newLimiter(rdb *redis.Client) limiterRouter {
