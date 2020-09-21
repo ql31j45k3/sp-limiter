@@ -35,14 +35,7 @@ type counterLimit struct {
 	ip2count map[string]int
 }
 
-func (l *counterLimit) Increase(ip string) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-
-	if tools.IsEmpty(ip) {
-		return
-	}
-
+func (l *counterLimit) incr(ip string) {
 	l.ip2count[ip] += 1
 }
 
@@ -53,7 +46,7 @@ func (l *counterLimit) Zero() {
 	l.ip2count = make(map[string]int)
 }
 
-func (l *counterLimit) IsAvailable(ip string) bool {
+func (l *counterLimit) IsAvailableAndIncr(ip string) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -61,7 +54,12 @@ func (l *counterLimit) IsAvailable(ip string) bool {
 		return false
 	}
 
-	return l.ip2count[ip] < l.maxCount
+	isIncr := l.ip2count[ip] < l.maxCount
+	if isIncr {
+		l.incr(ip)
+	}
+
+	return isIncr
 }
 
 func (l *counterLimit) GetCount(ip string) string {
@@ -69,7 +67,7 @@ func (l *counterLimit) GetCount(ip string) string {
 	defer l.mu.Unlock()
 
 	if tools.IsEmpty(ip) {
-		return ""
+		return "0"
 	}
 
 	return strconv.Itoa(l.ip2count[ip])
