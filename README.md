@@ -1,6 +1,6 @@
 # sp-limiter
 
-### 設定檔
+## 設定檔
 - 路徑： sp-limiter/configs/config.yaml
 - 重要參數
     - host.mode 控制限流實作類型：counter(計數器)、tokenBucket(令牌桶)、redisCounter(計數器 Redis)
@@ -21,12 +21,11 @@ in-memory 版本：counter(計數器)、tokenBucket(令牌桶)
   - 優點：服務無狀態，服務從單個擴容為多個服務，限流邏輯也可正常運行。
   - 缺點：每個服務各自連 Redis，Redis 成了服務的耦合點，Redis 單線程可能會成為效能的瓶頸。
 
-總結
+- 總結：
   <br/>
   依照服務的架構、擁有的 DB 建置、時程等因素確定優先級，在評估適合當下的方案，
   <br/>
   如果單以技術角度選擇建議讓服務屬於無狀態，不要耦合資料狀態讓服務可彈性的做調整，讓資料庫做有狀態的服務。
-  
 
 ## 啟動方式
 - Heroku 平台
