@@ -15,7 +15,7 @@ import (
 
 func RegisterRouter(r *gin.Engine, rdb *redis.Client) {
 	ctx := context.Background()
-	if err := redisCounter.initScript(ctx, rdb); err != nil {
+	if err := redisCounter.InitScript(ctx, rdb); err != nil {
 		panic(err)
 	}
 

@@ -31,7 +31,7 @@ type redisCounterLimiter struct {
 	maxCount int
 }
 
-func (l *redisCounterLimiter) initScript(ctx context.Context, rdb *redis.Client) error {
+func (l *redisCounterLimiter) InitScript(ctx context.Context, rdb *redis.Client) error {
 	evalSha, err := rdb.ScriptLoad(ctx, l.counterLuaScript).Result()
 	if err != nil {
 		return err
