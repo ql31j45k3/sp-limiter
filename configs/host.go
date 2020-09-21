@@ -10,10 +10,13 @@ import (
 )
 
 const (
-	HostModeCounter = "counter"
+	HostModeCounter      = "counter"
+	HostModeTokenBucket  = "tokenbucket"
+	HostModeRedisCounter = "rediscounter"
 )
 
 func newConfigHost() *configHost {
+	// 取得 heroku 運行環境的 PORT 變數
 	port := os.Getenv("PORT")
 	if tools.IsEmpty(port) {
 		port = viper.GetString("host.limiter")
@@ -25,9 +28,10 @@ func newConfigHost() *configHost {
 
 	config := &configHost{
 		limiterHost: ":" + port,
-		mode: viper.GetString("host.mode"),
-		interval: viper.GetDuration("host.interval"),
-		maxCount: viper.GetInt("host.maxCount"),
+		mode:        viper.GetString("host.mode"),
+		interval:    viper.GetDuration("host.interval"),
+		intervalInt: viper.GetInt("host.interval"),
+		maxCount:    viper.GetInt("host.maxCount"),
 	}
 
 	return config
@@ -36,9 +40,10 @@ func newConfigHost() *configHost {
 type configHost struct {
 	limiterHost string
 
-	mode string
-	interval time.Duration
-	maxCount int
+	mode        string
+	interval    time.Duration
+	intervalInt int
+	maxCount    int
 }
 
 func (c *configHost) GetLimiterHost() string {
@@ -51,6 +56,10 @@ func (c *configHost) GetMode() string {
 
 func (c *configHost) GetInterval() time.Duration {
 	return c.interval * time.Second
+}
+
+func (c *configHost) GetIntervalInt() int {
+	return c.intervalInt
 }
 
 func (c *configHost) GetMaxCount() int {

@@ -1,22 +1,18 @@
 package limiter
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/ql31j45k3/sp-limiter/configs"
 )
 
 var (
-	countLimit *counterLimit
-
-	apiFunc map[string]func(*gin.Context)
+	countLimit   *counterLimit
+	tokenBucket  *tokenBucketLimiter
+	redisCounter *redisCounterLimiter
 )
 
+// 初始化 countLimit、tokenBucket、redisCounter
 func Start() {
 	countLimit = newCounterLimit(configs.ConfigHost.GetInterval(), configs.ConfigHost.GetMaxCount())
-
-	limiterRouter := newLimiter()
-
-	apiFunc = make(map[string]func(*gin.Context))
-
-	apiFunc[configs.HostModeCounter] = limiterRouter.getCountLimiter
+	tokenBucket = newTokenBucketLimiter(configs.ConfigHost.GetInterval(), int64(configs.ConfigHost.GetMaxCount()))
+	redisCounter = newRedisCounterLimiter(configs.ConfigHost.GetIntervalInt(), configs.ConfigHost.GetMaxCount())
 }

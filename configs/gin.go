@@ -1,11 +1,18 @@
 package configs
 
 import (
-	"github.com/spf13/viper"
 	"strings"
+
+	"github.com/spf13/viper"
+)
+
+const (
+	ginModeDebug = "debug"
 )
 
 func newConfigGin() *configGin {
+	viper.SetDefault("gin.mode", ginModeDebug)
+
 	config := &configGin{
 		mode: viper.GetString("gin.mode"),
 	}
