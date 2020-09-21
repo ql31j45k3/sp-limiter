@@ -28,7 +28,7 @@ func RegisterRouter(r *gin.Engine, rdb *redis.Client) {
 
 	limiterFunc, ok := apiFunc[configs.ConfigHost.GetMode()];
 	if !ok {
-		panic(errors.New("host.mode not exist implement func"))
+		panic(errors.New("host.mode not exist implement func, check config [host.mode]"))
 	}
 
 	r.GET("/", limiterFunc)
