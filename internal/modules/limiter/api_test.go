@@ -29,6 +29,7 @@ func start() *gin.Engine {
 	if err2 != nil {
 		panic(err2)
 	}
+
 	// 測試執行起點位置不一樣，先手動調整取得路徑，才可正常取得 config.yaml 設定檔
 	path = path[0:strings.Index(path, "sp-limiter")] + "sp-limiter"
 	configs.Start(path)
