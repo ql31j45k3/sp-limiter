@@ -3,7 +3,9 @@ host:
   limiter: 8080
   # mode: counter(計數器)、tokenBucket(令牌桶)、redisCounter(計數器 Redis)
   mode: redisCounter
+  # interval: 以秒為單位，e.g. 控制每 60s 重新解除限流條件
   interval: 60
+  # 控制上限次數
   maxCount: 60
 
 gin:
