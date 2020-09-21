@@ -5,7 +5,13 @@ import (
 	"strings"
 )
 
+const (
+	ginModeDebug = "debug"
+)
+
 func newConfigGin() *configGin {
+	viper.SetDefault("gin.mode", ginModeDebug)
+
 	config := &configGin{
 		mode: viper.GetString("gin.mode"),
 	}
