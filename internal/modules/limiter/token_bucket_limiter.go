@@ -51,6 +51,7 @@ func (l *tokenBucketLimiter) TakeAvailable(ip string, block bool) (bool, int64) 
 
 	l.isExist(ip)
 
+	// 處理如果 token 已沒有，再次等待取 token 邏輯（只處理一次重新等待，並非一定要等待拿到 token 為止）
 	blockFunc := func(l *tokenBucketLimiter) (bool, int64) {
 		l.mu.Lock()
 
@@ -66,6 +67,7 @@ func (l *tokenBucketLimiter) TakeAvailable(ip string, block bool) (bool, int64) 
 
 
 		l.mu.Unlock()
+		// 用 sleep 方式做等待 token 產生邏輯
 		time.Sleep(l.interval)
 
 		l.mu.Lock()
@@ -82,6 +84,7 @@ func (l *tokenBucketLimiter) TakeAvailable(ip string, block bool) (bool, int64) 
 		return true, l.capacity - tokenCount
 	}
 
+	// 處理如果沒 token 馬上返回，不重新等待取 token 流程
 	nonBlockFunc := func(l *tokenBucketLimiter) (bool, int64) {
 		l.mu.Lock()
 		defer l.mu.Unlock()
