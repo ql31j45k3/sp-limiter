@@ -26,7 +26,6 @@ func newTokenBucketLimiter(interval time.Duration, capacity int64) *tokenBucketL
 	return l
 }
 
-// tokenBucketLimiter
 type tokenBucketLimiter struct {
 	interval time.Duration
 	mu       sync.Mutex
