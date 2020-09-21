@@ -11,8 +11,7 @@ func newTokenBucketLimiter(interval time.Duration, capacity int64) *tokenBucketL
 		interval: interval,
 		capacity: capacity,
 
-		ip2Token:          make(map[string]chan struct{}, capacity),
-		ip2AvailableToken: make(map[string]int64),
+		ip2Token: make(map[string]int64, capacity),
 	}
 
 	go func(l *tokenBucketLimiter) {
@@ -27,33 +26,21 @@ func newTokenBucketLimiter(interval time.Duration, capacity int64) *tokenBucketL
 	return l
 }
 
-// tokenBucketLimiter，用 channel 模擬 token bucket
+// tokenBucketLimiter
 type tokenBucketLimiter struct {
 	interval time.Duration
 	mu       sync.Mutex
 
-	capacity          int64
-	ip2Token          map[string]chan struct{}
-	ip2AvailableToken map[string]int64
+	capacity int64
+	ip2Token map[string]int64
 }
 
 func (l *tokenBucketLimiter) addToken() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	for k, v := range l.ip2Token {
-		ip := k
-		var i int64
-		for i = 0; i < l.capacity; i++ {
-			select {
-			case v <- struct{}{}:
-			default:
-				// 代表容量已滿，後續直接略過
-				break
-			}
-		}
-
-		l.ip2AvailableToken[ip] = 0
+	for ip, _ := range l.ip2Token {
+		l.ip2Token[ip] = l.capacity
 	}
 }
 
@@ -62,34 +49,58 @@ func (l *tokenBucketLimiter) TakeAvailable(ip string, block bool) (bool, int64) 
 		return false, 0
 	}
 
-	// 目前數據結構，IP 對應 chan，由於 IP 無法事先知道，先用惰性方式，第一次再置入 token
 	l.isExist(ip)
 
-	l.mu.Lock()
-	if !block {
-		// 客戶端沒有阻塞等待 token 才可使用 defer 方式解除 lock
-		defer l.mu.Unlock()
-	}
+	blockFunc := func(l *tokenBucketLimiter) (bool, int64) {
+		l.mu.Lock()
 
-	// 選擇等待拿到 token
-	if block {
-		// 要解除 lock，才可等待 token 新增
-		l.mu.Unlock()
-		select {
-		case <-l.ip2Token[ip]:
-			l.ip2AvailableToken[ip] += 1
-			return true, l.ip2AvailableToken[ip]
+		tokenCount := l.ip2Token[ip]
+		isTakeToken := (tokenCount - 1) >= 0
+		if isTakeToken {
+			defer l.mu.Unlock()
+			tokenCount = tokenCount - 1
+			l.ip2Token[ip] = tokenCount
+
+			return true, l.capacity - tokenCount
 		}
+
+
+		l.mu.Unlock()
+		time.Sleep(l.interval)
+
+		l.mu.Lock()
+		defer l.mu.Unlock()
+
+		tokenCount = l.ip2Token[ip]
+		if (tokenCount - 1) < 0 {
+			return false, 0
+		}
+
+		tokenCount = tokenCount - 1
+		l.ip2Token[ip] = tokenCount
+
+		return true, l.capacity - tokenCount
 	}
 
-	// 選擇沒有 token，直接 return
-	select {
-	case <-l.ip2Token[ip]:
-		l.ip2AvailableToken[ip] += 1
-		return true, l.ip2AvailableToken[ip]
-	default:
-		return false, 0
+	nonBlockFunc := func(l *tokenBucketLimiter) (bool, int64) {
+		l.mu.Lock()
+		defer l.mu.Unlock()
+
+		tokenCount := l.ip2Token[ip]
+		if (tokenCount - 1) < 0 {
+			return false, 0
+		}
+
+		tokenCount = tokenCount - 1
+		l.ip2Token[ip] = tokenCount
+
+		return true, l.capacity - tokenCount
 	}
+
+	if block {
+		return blockFunc(l)
+	}
+	return nonBlockFunc(l)
 }
 
 func (l *tokenBucketLimiter) isExist(ip string) {
@@ -101,12 +112,5 @@ func (l *tokenBucketLimiter) isExist(ip string) {
 	}
 
 	// 第一次 IP 請求，初始化 token
-	l.ip2Token[ip] = make(chan struct{}, l.capacity)
-	v := l.ip2Token[ip]
-	var i int64
-	for i = 0; i < l.capacity; i++ {
-		select {
-		case v <- struct{}{}:
-		}
-	}
+	l.ip2Token[ip] = l.capacity
 }
