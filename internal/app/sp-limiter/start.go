@@ -59,6 +59,7 @@ func (cp *containerProvide) redisClient() *redis.Client {
 			panic(err)
 		}
 
+		// 新版本 go-redis 如果沒有 Username = "", 會出現 Error : ERR wrong number of arguments for 'auth' command
 		opt.Username = ""
 	} else {
 		// local redis 連線方式，使用帳密模式
