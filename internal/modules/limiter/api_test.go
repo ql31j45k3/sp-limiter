@@ -23,6 +23,7 @@ import (
 )
 
 func start() *gin.Engine {
+	// 取得現在檔案的路徑
 	path, err2 := os.Getwd()
 	if err2 != nil {
 		panic(err2)
@@ -33,14 +34,17 @@ func start() *gin.Engine {
 
 	Start()
 
+	// 初始化 gin 服務
 	r := gin.Default()
 
+	// 初始化 redis client
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     configs.ConfigRedis.GetAddr(),
 		Password: configs.ConfigRedis.GetPassword(),
 		DB:       configs.ConfigRedis.GetDB(),
 	})
 
+	// 註冊路由
 	RegisterRouter(r, rdb)
 
 	return r
@@ -55,9 +59,11 @@ func httptestRequest(r *gin.Engine, method, uri string, reader io.Reader, remote
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 
+	// 取得回應結果
 	result := w.Result()
 	defer result.Body.Close()
 
+	// 讀取 body 全部資料
 	body, err := ioutil.ReadAll(result.Body)
 	if err != nil {
 		return 0, nil, err
@@ -67,6 +73,7 @@ func httptestRequest(r *gin.Engine, method, uri string, reader io.Reader, remote
 }
 
 func TestRegisterRouter(t *testing.T) {
+	// 初始化測試所需的前置作業
 	r := start()
 
 	url, err := url.Parse("/")
@@ -79,6 +86,7 @@ func TestRegisterRouter(t *testing.T) {
 
 	// 模擬兩個以上 Client，每個 IP 有總數量上限
 	ip := []string{"192.0.2.1:1235", "192.0.2.2:1235"}
+
 	for i := 0; i < len(ip); i++ {
 		wg.Add(1)
 
@@ -91,9 +99,8 @@ func TestRegisterRouter(t *testing.T) {
 
 			// 睡眠模擬被阻擋一段時間
 			t.Log(fmt.Sprintf("限流 %s 模擬被阻擋一段時間", configs.ConfigHost.GetInterval()))
-			ticker := time.NewTicker(configs.ConfigHost.GetInterval())
+			time.Sleep(configs.ConfigHost.GetInterval())
 
-			<-ticker.C
 			// 超過限流限制時間，重新發起請求
 			testLimiterUnblocked(t, r, url, remoteAddr)
 			testLimiterBlock(t, r, url, remoteAddr)
@@ -101,6 +108,7 @@ func TestRegisterRouter(t *testing.T) {
 		}(&wg, t, r, url.String(), ip[i])
 	}
 
+	// 等待 goroutine 執行完畢
 	wg.Wait()
 }
 
@@ -121,10 +129,12 @@ func testLimiterUnblocked(t *testing.T, r *gin.Engine, url, remoteAddr string) {
 				return
 			}
 
+			// 驗證 回應的 http status 是否 200
 			assert.Equal(t, http.StatusOK, httpStatus)
 
 			// 用條件判斷，只要目前數量未超過限制數量，代表正確
 			assert.Condition(t, func() bool {
+				// 取得 body 內的請求量數字
 				responseCount, err := strconv.Atoi(string(body))
 				if err != nil {
 					t.Log(fmt.Sprintf("body error message [%s]", string(body)))
@@ -135,6 +145,7 @@ func testLimiterUnblocked(t *testing.T, r *gin.Engine, url, remoteAddr string) {
 				t.Log(fmt.Sprintf("remoteAddr %s, maxCount %d, responseCount %d, maxCount > responseCount %t",
 					remoteAddr, configs.ConfigHost.GetMaxCount(), responseCount, responseCount > configs.ConfigHost.GetMaxCount()))
 
+				// 驗證得到 body 現在請求量數字是否大於 請求上限數字
 				if responseCount > configs.ConfigHost.GetMaxCount() {
 					return false
 				}
@@ -144,6 +155,7 @@ func testLimiterUnblocked(t *testing.T, r *gin.Engine, url, remoteAddr string) {
 		}(&wg2, t, r, url, remoteAddr)
 	}
 
+	// 等待 goroutine 執行完畢
 	wg2.Wait()
 }
 
@@ -155,6 +167,8 @@ func testLimiterBlock(t *testing.T, r *gin.Engine, url, remoteAddr string) {
 		return
 	}
 
+	// 驗證 回應的 http status 是否 200
 	assert.Equal(t, http.StatusOK, httpStatus)
+	// 驗證 超過限流數量後，預期得到 Error 訊息
 	assert.Equal(t, "Error", string(body))
 }
