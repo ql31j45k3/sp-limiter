@@ -7,6 +7,7 @@ import (
 )
 
 func newRedisCounterLimiter(interval, maxCount int) *redisCounterLimiter {
+	// redis script，使用 redis incr 做加總、expire 設定過期時間
 	counterLuaScript := ` 
     local count = redis.call('incr',KEYS[1]);
 	if tonumber(count) == 1 then
@@ -24,11 +25,10 @@ func newRedisCounterLimiter(interval, maxCount int) *redisCounterLimiter {
 
 type redisCounterLimiter struct {
 	counterLuaScript string
+	evalSha          string
 
 	interval int
 	maxCount int
-
-	evalSha string
 }
 
 func (l *redisCounterLimiter) initScript(ctx context.Context, rdb *redis.Client) error {
@@ -41,7 +41,7 @@ func (l *redisCounterLimiter) initScript(ctx context.Context, rdb *redis.Client)
 	return nil
 }
 
-func (l *redisCounterLimiter) IsActionAllow(ctx context.Context, rdb *redis.Client, ip string) (bool, int64, error) {
+func (l *redisCounterLimiter) TakeAvailableAndIncr(ctx context.Context, rdb *redis.Client, ip string) (bool, int64, error) {
 	res, err2 := rdb.EvalSha(ctx, l.evalSha, []string{ip}, l.interval).Result()
 	if err2 != nil {
 		return false, 0, err2

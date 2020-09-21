@@ -47,7 +47,7 @@ type limiterRouter struct {
 func (l *limiterRouter) getCountLimiter(c *gin.Context) {
 	clientIP := c.ClientIP()
 
-	if countLimit.IsAvailableAndIncr(clientIP) {
+	if countLimit.TakeAvailableAndIncr(clientIP) {
 		c.String(http.StatusOK, countLimit.GetCount(clientIP))
 		return
 	}
@@ -71,10 +71,10 @@ func (l *limiterRouter) getRedisCounter(c *gin.Context) {
 	ctx := context.Background()
 	clientIP := c.ClientIP()
 
-	ok, count, err := redisCounter.IsActionAllow(ctx, l.rdb, clientIP)
+	ok, count, err := redisCounter.TakeAvailableAndIncr(ctx, l.rdb, clientIP)
 	if err != nil {
-		log.Println(fmt.Sprintf("Error IsActionAllow fail %v", err))
-		c.String(http.StatusOK, "Error IsActionAllow fail")
+		log.Println(fmt.Sprintf("Error TakeAvailableAndIncr fail %v", err))
+		c.String(http.StatusOK, "Error TakeAvailableAndIncr fail")
 		return
 	}
 
