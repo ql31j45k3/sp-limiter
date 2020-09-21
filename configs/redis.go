@@ -1,9 +1,9 @@
 package configs
 
 import (
-	"github.com/ql31j45k3/sp-limiter/internal/utils/tools"
 	"os"
 
+	"github.com/ql31j45k3/sp-limiter/internal/utils/tools"
 	"github.com/spf13/viper"
 )
 

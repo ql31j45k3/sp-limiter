@@ -1,10 +1,11 @@
 package limiter
 
 import (
-	"github.com/ql31j45k3/sp-limiter/internal/utils/tools"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/ql31j45k3/sp-limiter/internal/utils/tools"
 )
 
 // newCounterLimit 初始化參數

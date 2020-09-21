@@ -30,7 +30,7 @@ func RegisterRouter(r *gin.Engine, rdb *redis.Client) {
 	apiFunc[configs.HostModeRedisCounter] = limiterRouter.getRedisCounter
 
 	// 依照 ConfigHost.GetMode 參數取得限流功能
-	limiterFunc, ok := apiFunc[configs.ConfigHost.GetMode()];
+	limiterFunc, ok := apiFunc[configs.ConfigHost.GetMode()]
 	if !ok {
 		panic(errors.New("host.mode not exist implement func, check config [host.mode]"))
 	}
@@ -41,7 +41,7 @@ func RegisterRouter(r *gin.Engine, rdb *redis.Client) {
 
 func newLimiter(rdb *redis.Client) limiterRouter {
 	return limiterRouter{
-		rdb:rdb,
+		rdb: rdb,
 	}
 }
 

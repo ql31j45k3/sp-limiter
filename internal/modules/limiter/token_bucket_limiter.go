@@ -1,9 +1,10 @@
 package limiter
 
 import (
-	"github.com/ql31j45k3/sp-limiter/internal/utils/tools"
 	"sync"
 	"time"
+
+	"github.com/ql31j45k3/sp-limiter/internal/utils/tools"
 )
 
 // newTokenBucketLimiter 初始化參數

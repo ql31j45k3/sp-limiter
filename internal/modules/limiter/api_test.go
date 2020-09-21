@@ -2,7 +2,6 @@ package limiter
 
 import (
 	"fmt"
-	"github.com/go-redis/redis/v8"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -14,6 +13,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/go-redis/redis/v8"
 
 	"github.com/gin-gonic/gin"
 

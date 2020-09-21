@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	countLimit *counterLimit
-	tokenBucket *tokenBucketLimiter
+	countLimit   *counterLimit
+	tokenBucket  *tokenBucketLimiter
 	redisCounter *redisCounterLimiter
 )
 

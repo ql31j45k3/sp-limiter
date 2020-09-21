@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	HostModeCounter = "counter"
-	HostModeTokenBucket = "tokenbucket"
+	HostModeCounter      = "counter"
+	HostModeTokenBucket  = "tokenbucket"
 	HostModeRedisCounter = "rediscounter"
 )
 
@@ -28,10 +28,10 @@ func newConfigHost() *configHost {
 
 	config := &configHost{
 		limiterHost: ":" + port,
-		mode: viper.GetString("host.mode"),
-		interval: viper.GetDuration("host.interval"),
-		intervalInt : viper.GetInt("host.interval"),
-		maxCount: viper.GetInt("host.maxCount"),
+		mode:        viper.GetString("host.mode"),
+		interval:    viper.GetDuration("host.interval"),
+		intervalInt: viper.GetInt("host.interval"),
+		maxCount:    viper.GetInt("host.maxCount"),
 	}
 
 	return config
@@ -40,10 +40,10 @@ func newConfigHost() *configHost {
 type configHost struct {
 	limiterHost string
 
-	mode string
-	interval time.Duration
+	mode        string
+	interval    time.Duration
 	intervalInt int
-	maxCount int
+	maxCount    int
 }
 
 func (c *configHost) GetLimiterHost() string {
