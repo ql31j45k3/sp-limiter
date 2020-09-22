@@ -58,3 +58,5 @@ in-memory 版本：counter(計數器)、tokenBucket(令牌桶)
   <br/>
   執行語法 (單元測試包含細節) ： go test -v ./internal/modules/limiter
   
+  ![cover](cover.png)
+  
