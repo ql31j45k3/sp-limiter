@@ -23,6 +23,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	// 模擬兩個以上 Client，每個 IP 有總數量上限
+	ip = []string{"192.0.2.1:1235", "192.0.2.2:1235"}
+)
+
 func start() *gin.Engine {
 	// 取得現在檔案的路徑
 	path, err2 := os.Getwd()
@@ -85,9 +90,6 @@ func TestRegisterRouter(t *testing.T) {
 	}
 
 	var wg sync.WaitGroup
-
-	// 模擬兩個以上 Client，每個 IP 有總數量上限
-	ip := []string{"192.0.2.1:1235", "192.0.2.2:1235"}
 
 	for i := 0; i < len(ip); i++ {
 		wg.Add(1)
