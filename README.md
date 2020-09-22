@@ -3,6 +3,7 @@
 ## 設定檔
 - 路徑： sp-limiter/configs/config.yaml
 - 重要參數
+    - host.limiterPort 本地 local port
     - host.mode 控制限流實作類型：counter(計數器)、tokenBucket(令牌桶)、redisCounter(計數器 Redis)
     - host.interval 以秒為單位，e.g. 控制每 60s 重新解除限流條件
     - host.maxCount 控制上限次數
