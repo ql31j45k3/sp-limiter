@@ -14,7 +14,7 @@ func newTokenBucketLimiter(interval time.Duration, capacity int64) *tokenBucketL
 		interval: interval,
 		capacity: capacity,
 
-		ip2token: make(map[string]int64, capacity),
+		ip2token: make(map[string]int64),
 	}
 
 	go func(l *tokenBucketLimiter) {
