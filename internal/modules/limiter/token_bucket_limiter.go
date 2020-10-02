@@ -22,7 +22,9 @@ func newTokenBucketLimiter(interval time.Duration, capacity int64) *tokenBucketL
 
 		for {
 			<-ticker.C
-			l.addToken()
+			// 令牌演算法邏輯上要先產生 token，但此功能是每個 IP 設置 token，
+			// 故初始 token 邏輯在第一次取得 IP 時建立 token，在每次觸發 ticker 做重置 map 邏輯
+			l.Zero()
 		}
 	}(l)
 
@@ -37,14 +39,12 @@ type tokenBucketLimiter struct {
 	ip2token map[string]int64
 }
 
-// addToken 依照 IP 依序執行，重新置入 token
-func (l *tokenBucketLimiter) addToken() {
+// Zero 將紀錄 ip 對應的 token 做初始化
+func (l *tokenBucketLimiter) Zero() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	for ip, _ := range l.ip2token {
-		l.ip2token[ip] = l.capacity
-	}
+	l.ip2token = make(map[string]int64)
 }
 
 // TakeAvailable 確認是否可用 (尚未到達限流條件)，並同時減少一個 token
