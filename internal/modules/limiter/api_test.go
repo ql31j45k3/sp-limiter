@@ -30,9 +30,9 @@ var (
 
 func start() *gin.Engine {
 	// 取得現在檔案的路徑
-	path, err2 := os.Getwd()
-	if err2 != nil {
-		panic(err2)
+	path, err := os.Getwd()
+	if err != nil {
+		panic(err)
 	}
 
 	// 測試執行起點位置不一樣，先手動調整取得路徑，才可正常取得 config.yaml 設定檔
